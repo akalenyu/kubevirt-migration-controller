@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- migrations_v1alpha1_migcluster.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
