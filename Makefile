@@ -207,7 +207,7 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 ## Tool Binaries
-KUBECTL ?= kubectl
+KUBECTL ?= ./cluster-up/kubectl.sh
 KIND ?= kind
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
@@ -339,3 +339,16 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+##@ Local cluster management
+.PHONY: cluster-up
+cluster-up: ## Start a kubevirtci cluster. set KUBEVIRT_PROVIDER environment variable to select the type of cluster. set KUBEVIRT_NUM_NODES to something higher than 1 to have more than one node.
+	./hack/cluster-up.sh
+
+.PHONY: cluster-sync
+cluster-sync: ## Build the controller/importer/cloner, and push it into a running cluster. The cluster must be up before running a cluster sync. Also generates a manifest and applies it to the running cluster after pushing the images to it.
+	./cluster-sync/sync.sh
+
+.PHONY: cluster-down
+cluster-down: ## Stop the cluster, doing a make cluster-down && make cluster-up will basically restart the cluster into an empty fresh state.
+	./cluster-up/down.sh
