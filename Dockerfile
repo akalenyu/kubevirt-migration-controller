@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM docker.io/golang:1.23 AS builder
+FROM quay.io/konveyor/builder:v1.23.6 AS builder
 ARG TARGETOS
 ARG TARGETARCH
 
