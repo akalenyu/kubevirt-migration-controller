@@ -22,6 +22,9 @@ resources:
 # default, aiding admins in cluster management. Those roles are
 # not used by the {{ .ProjectName }} itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
+- migplan_admin_role.yaml
+- migplan_editor_role.yaml
+- migplan_viewer_role.yaml
 - migcluster_admin_role.yaml
 - migcluster_editor_role.yaml
 - migcluster_viewer_role.yaml

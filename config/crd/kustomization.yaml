@@ -3,6 +3,7 @@
 # It should be run by config/default
 resources:
 - bases/migrations.kubevirt.io_migclusters.yaml
+- bases/migrations.kubevirt.io_migplans.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
