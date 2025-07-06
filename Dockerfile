@@ -2,6 +2,8 @@
 FROM quay.io/konveyor/builder:v1.23.6 AS builder
 ARG TARGETOS
 ARG TARGETARCH
+RUN mkdir -p /gopath
+ENV GOPATH=/gopath
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
