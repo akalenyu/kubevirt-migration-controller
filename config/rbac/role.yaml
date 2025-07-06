@@ -8,6 +8,7 @@ rules:
   - migrations.kubevirt.io
   resources:
   - migclusters
+  - migplans
   verbs:
   - create
   - delete
@@ -20,12 +21,14 @@ rules:
   - migrations.kubevirt.io
   resources:
   - migclusters/finalizers
+  - migplans/finalizers
   verbs:
   - update
 - apiGroups:
   - migrations.kubevirt.io
   resources:
   - migclusters/status
+  - migplans/status
   verbs:
   - get
   - patch
