@@ -43,31 +43,12 @@ type MigPlanSpec struct {
 
 	MigStorageRef *corev1.ObjectReference `json:"migStorageRef,omitempty"`
 
-	// If the migration was successful for a migplan, this value can be set True indicating that after one successful migration no new migrations can be carried out for this migplan.
-	Closed bool `json:"closed,omitempty"`
-
-	// If set True, the controller is forced to check if the migplan is in Ready state or not.
-	Refresh bool `json:"refresh,omitempty"`
-
-	// If set True, disables direct image migrations.
-	IndirectImageMigration bool `json:"indirectImageMigration,omitempty"`
-
 	// If set True, disables direct volume migrations.
 	IndirectVolumeMigration bool `json:"indirectVolumeMigration,omitempty"`
-
-	// IncludedResources optional list of included resources in Velero Backup
-	// When not set, all the resources are included in the backup
-	// +kubebuilder:validation:Optional
-	IncludedResources []*metav1.GroupKind `json:"includedResources,omitempty"`
 
 	// LabelSelector optional label selector on the included resources in Velero Backup
 	// +kubebuilder:validation:Optional
 	LabelSelector *metav1.LabelSelector `json:"labelSelector,omitempty"`
-
-	// LiveMigrate optional flag to enable live migration of VMs during direct volume migration
-	// Only running VMs when the plan is executed will be live migrated
-	// +kubebuilder:validation:Optional
-	LiveMigrate *bool `json:"liveMigrate,omitempty"`
 }
 
 // MigPlanStatus defines the observed state of MigPlan
@@ -111,6 +92,52 @@ type MigPlanList struct {
 
 func init() {
 	SchemeBuilder.Register(&MigPlan{}, &MigPlanList{})
+}
+
+// GetSourceNamespaces get source namespaces without mapping
+func (r *MigPlan) GetSourceNamespaces() []string {
+	includedNamespaces := []string{}
+	for _, namespace := range r.Spec.Namespaces {
+		namespace = strings.Split(namespace, ":")[0]
+		includedNamespaces = append(includedNamespaces, namespace)
+	}
+
+	return includedNamespaces
+}
+
+func (r *MigPlan) GetSuffix() string {
+	if r.Status.Suffix != nil {
+		return *r.Status.Suffix
+	}
+	return StorageConversionPVCNamePrefix
+}
+
+// Get whether the plan conflicts with another.
+// Plans conflict when:
+//   - Have any of the clusters in common AND
+//   - Have any of the namespaces in common
+func (r *MigPlan) HasConflict(plan *MigPlan) bool {
+	if !refEquals(r.Spec.SrcMigClusterRef, plan.Spec.SrcMigClusterRef) &&
+		!refEquals(r.Spec.DestMigClusterRef, plan.Spec.DestMigClusterRef) &&
+		!refEquals(r.Spec.SrcMigClusterRef, plan.Spec.DestMigClusterRef) &&
+		!refEquals(r.Spec.DestMigClusterRef, plan.Spec.SrcMigClusterRef) {
+		return false
+	}
+	nsMap := map[string]bool{}
+	for _, name := range plan.Spec.Namespaces {
+		nsMap[name] = true
+	}
+	for _, name := range r.Spec.Namespaces {
+		if _, foundNs := nsMap[name]; foundNs {
+			return true
+		}
+	}
+
+	return false
+}
+
+func refEquals(refA, refB *corev1.ObjectReference) bool {
+	return refA.Namespace == refB.Namespace && refA.Name == refB.Name
 }
 
 // Collection of PVs
@@ -267,6 +294,23 @@ const (
 	Unknown          OwnerType = "Unknown"
 )
 
+const (
+	StorageConversionPVCNamePrefix = "new"
+	TouchAnnotation                = "touch"
+)
+
+// PV Actions.
+const (
+	PvMoveAction = "move"
+	PvCopyAction = "copy"
+	PvSkipAction = "skip"
+)
+
+// PV Copy Methods.
+const (
+	PvBlockCopyMethod = "block"
+)
+
 // PVC
 type PVC struct {
 	Namespace    string                              `json:"namespace,omitempty" protobuf:"bytes,3,opt,name=namespace"`
@@ -300,24 +344,19 @@ func (p PVC) GetSourceName() string {
 
 // Supported
 // Actions     - The list of supported actions
-// CopyMethods - The list of supported copy methods
 type Supported struct {
-	Actions     []string `json:"actions"`
-	CopyMethods []string `json:"copyMethods"`
+	Actions []string `json:"actions"`
 }
 
 // Selection
 // Action - The PV migration action (move|copy|skip)
 // StorageClass - The PV storage class name to use in the destination cluster.
 // AccessMode   - The PV access mode to use in the destination cluster, if different from src PVC AccessMode
-// TODO: CopyMethod is a candidate for dropping since in a VM only world we only have block copy method
-// CopyMethod   - The PV copy method to use ('filesystem' for restic copy, or 'snapshot' for velero snapshot plugin)
 // Verify       - Whether or not to verify copied volume data if CopyMethod is 'filesystem'
 type Selection struct {
 	Action       string                            `json:"action,omitempty"`
 	StorageClass string                            `json:"storageClass,omitempty"`
 	AccessMode   corev1.PersistentVolumeAccessMode `json:"accessMode,omitempty" protobuf:"bytes,1,rep,name=accessMode,casttype=PersistentVolumeAccessMode"`
-	CopyMethod   string                            `json:"copyMethod,omitempty"`
 	Verify       bool                              `json:"verify,omitempty"`
 }
 
@@ -325,7 +364,6 @@ type Selection struct {
 func (r *PV) Update(pv PV) {
 	r.StorageClass = pv.StorageClass
 	r.Supported.Actions = pv.Supported.Actions
-	r.Supported.CopyMethods = pv.Supported.CopyMethods
 	r.Capacity = pv.Capacity
 	r.PVC = pv.PVC
 	r.NFS = pv.NFS

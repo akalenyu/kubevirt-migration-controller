@@ -55,11 +55,6 @@ spec:
           spec:
             description: MigPlanSpec defines the desired state of MigPlan
             properties:
-              closed:
-                description: If the migration was successful for a migplan, this value
-                  can be set True indicating that after one successful migration no
-                  new migrations can be carried out for this migplan.
-                type: boolean
               destMigClusterRef:
                 description: ObjectReference contains enough information to let you
                   inspect or modify the referred object.
@@ -104,27 +99,6 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
-              includedResources:
-                description: |-
-                  IncludedResources optional list of included resources in Velero Backup
-                  When not set, all the resources are included in the backup
-                items:
-                  description: |-
-                    GroupKind specifies a Group and a Kind, but does not force a version.  This is useful for identifying
-                    concepts during lookup stages without having partially valid types
-                  properties:
-                    group:
-                      type: string
-                    kind:
-                      type: string
-                  required:
-                  - group
-                  - kind
-                  type: object
-                type: array
-              indirectImageMigration:
-                description: If set True, disables direct image migrations.
-                type: boolean
               indirectVolumeMigration:
                 description: If set True, disables direct volume migrations.
                 type: boolean
@@ -175,11 +149,6 @@ spec:
                     type: object
                 type: object
                 x-kubernetes-map-type: atomic
-              liveMigrate:
-                description: |-
-                  LiveMigrate optional flag to enable live migration of VMs during direct volume migration
-                  Only running VMs when the plan is executed will be live migrated
-                type: boolean
               migStorageRef:
                 description: ObjectReference contains enough information to let you
                   inspect or modify the referred object.
@@ -283,14 +252,11 @@ spec:
                         Action - The PV migration action (move|copy|skip)
                         StorageClass - The PV storage class name to use in the destination cluster.
                         AccessMode   - The PV access mode to use in the destination cluster, if different from src PVC AccessMode
-                        CopyMethod   - The PV copy method to use ('filesystem' for restic copy, or 'snapshot' for velero snapshot plugin)
                         Verify       - Whether or not to verify copied volume data if CopyMethod is 'filesystem'
                       properties:
                         accessMode:
                           type: string
                         action:
-                          type: string
-                        copyMethod:
                           type: string
                         storageClass:
                           type: string
@@ -303,29 +269,19 @@ spec:
                       description: |-
                         Supported
                         Actions     - The list of supported actions
-                        CopyMethods - The list of supported copy methods
                       properties:
                         actions:
                           items:
                             type: string
                           type: array
-                        copyMethods:
-                          items:
-                            type: string
-                          type: array
                       required:
                       - actions
-                      - copyMethods
                       type: object
                   required:
                   - selection
                   - supported
                   type: object
                 type: array
-              refresh:
-                description: If set True, the controller is forced to check if the
-                  migplan is in Ready state or not.
-                type: boolean
               srcMigClusterRef:
                 description: ObjectReference contains enough information to let you
                   inspect or modify the referred object.

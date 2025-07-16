@@ -19,10 +19,12 @@ package controller
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	migrationsv1alpha1 "kubevirt.io/kubevirt-migration-controller/api/v1alpha1"
 )
@@ -50,6 +52,27 @@ func (r *MigClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	log := logf.FromContext(ctx)
 
 	log.Info("Reconciling MigCluster")
+
+	cluster := &migrationsv1alpha1.MigCluster{}
+	err := r.Get(context.TODO(), req.NamespacedName, cluster)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return reconcile.Result{}, nil
+		}
+		log.Error(err, "Failed to get MigCluster")
+		return reconcile.Result{}, err
+	}
+
+	// Ready
+	cluster.Status.SetReady(
+		!cluster.Status.HasBlockerCondition(),
+		"The cluster is ready.")
+
+	// Apply changes.
+	err = r.Status().Update(context.TODO(), cluster)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }

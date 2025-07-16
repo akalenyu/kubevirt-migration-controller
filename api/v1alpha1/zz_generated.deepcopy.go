@@ -314,26 +314,10 @@ func (in *MigPlanSpec) DeepCopyInto(out *MigPlanSpec) {
 		*out = new(v1.ObjectReference)
 		**out = **in
 	}
-	if in.IncludedResources != nil {
-		in, out := &in.IncludedResources, &out.IncludedResources
-		*out = make([]*metav1.GroupKind, len(*in))
-		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(metav1.GroupKind)
-				**out = **in
-			}
-		}
-	}
 	if in.LabelSelector != nil {
 		in, out := &in.LabelSelector, &out.LabelSelector
 		*out = new(metav1.LabelSelector)
 		(*in).DeepCopyInto(*out)
-	}
-	if in.LiveMigrate != nil {
-		in, out := &in.LiveMigrate, &out.LiveMigrate
-		*out = new(bool)
-		**out = **in
 	}
 }
 
@@ -505,11 +489,6 @@ func (in *Supported) DeepCopyInto(out *Supported) {
 	*out = *in
 	if in.Actions != nil {
 		in, out := &in.Actions, &out.Actions
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.CopyMethods != nil {
-		in, out := &in.CopyMethods, &out.CopyMethods
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}

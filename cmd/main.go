@@ -37,8 +37,10 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	virtv1 "kubevirt.io/api/core/v1"
 	migrationsv1alpha1 "kubevirt.io/kubevirt-migration-controller/api/v1alpha1"
 	"kubevirt.io/kubevirt-migration-controller/internal/controller"
+	"kubevirt.io/kubevirt-migration-controller/internal/controller/migplan"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -49,6 +51,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	utilruntime.Must(virtv1.AddToScheme(scheme))
 
 	utilruntime.Must(migrationsv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
@@ -209,9 +212,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "MigCluster")
 		os.Exit(1)
 	}
-	if err = (&controller.MigPlanReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+	if err = (&migplan.MigPlanReconciler{
+		Client:        mgr.GetClient(),
+		Scheme:        mgr.GetScheme(),
+		EventRecorder: mgr.GetEventRecorderFor("migplan-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "MigPlan")
 		os.Exit(1)
