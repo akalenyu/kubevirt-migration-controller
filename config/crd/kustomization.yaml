@@ -4,6 +4,7 @@
 resources:
 - bases/migrations.kubevirt.io_migclusters.yaml
 - bases/migrations.kubevirt.io_migplans.yaml
+- bases/migrations.kubevirt.io_migmigrations.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:

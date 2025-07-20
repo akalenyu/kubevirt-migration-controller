@@ -38,6 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	virtv1 "kubevirt.io/api/core/v1"
+
 	migrationsv1alpha1 "kubevirt.io/kubevirt-migration-controller/api/v1alpha1"
 	"kubevirt.io/kubevirt-migration-controller/internal/controller"
 	"kubevirt.io/kubevirt-migration-controller/internal/controller/migplan"
@@ -218,6 +219,13 @@ func main() {
 		EventRecorder: mgr.GetEventRecorderFor("migplan-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "MigPlan")
+		os.Exit(1)
+	}
+	if err = (&controller.MigMigrationReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "MigMigration")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
