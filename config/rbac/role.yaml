@@ -30,6 +30,7 @@ rules:
   - migrations.kubevirt.io
   resources:
   - migclusters
+  - migmigrations
   - migplans
   verbs:
   - create
@@ -43,6 +44,7 @@ rules:
   - migrations.kubevirt.io
   resources:
   - migclusters/finalizers
+  - migmigrations/finalizers
   - migplans/finalizers
   verbs:
   - update
@@ -50,6 +52,7 @@ rules:
   - migrations.kubevirt.io
   resources:
   - migclusters/status
+  - migmigrations/status
   - migplans/status
   verbs:
   - get
