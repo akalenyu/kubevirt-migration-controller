@@ -1,0 +1,111 @@
+package migmigration
+
+// Phases
+const (
+	Created                                        = ""
+	Started                                        = "Started"
+	CleanStaleAnnotations                          = "CleanStaleAnnotations"
+	CleanStaleVeleroCRs                            = "CleanStaleVeleroCRs"
+	CleanStaleResticCRs                            = "CleanStaleResticCRs"
+	CleanStaleStagePods                            = "CleanStaleStagePods"
+	WaitForStaleStagePodsTerminated                = "WaitForStaleStagePodsTerminated"
+	StartRefresh                                   = "StartRefresh"
+	WaitForRefresh                                 = "WaitForRefresh"
+	CreateRegistries                               = "CreateRegistries"
+	CreateDirectImageMigration                     = "CreateDirectImageMigration"
+	WaitForDirectImageMigrationToComplete          = "WaitForDirectImageMigrationToComplete"
+	EnsureCloudSecretPropagated                    = "EnsureCloudSecretPropagated"
+	PreBackupHooks                                 = "PreBackupHooks"
+	PostBackupHooks                                = "PostBackupHooks"
+	PreRestoreHooks                                = "PreRestoreHooks"
+	PostRestoreHooks                               = "PostRestoreHooks"
+	PreBackupHooksFailed                           = "PreBackupHooksFailed"
+	PostBackupHooksFailed                          = "PostBackupHooksFailed"
+	PreRestoreHooksFailed                          = "PreRestoreHooksFailed"
+	PostRestoreHooksFailed                         = "PostRestoreHooksFailed"
+	EnsureInitialBackup                            = "EnsureInitialBackup"
+	InitialBackupCreated                           = "InitialBackupCreated"
+	InitialBackupFailed                            = "InitialBackupFailed"
+	AnnotateResources                              = "AnnotateResources"
+	EnsureStagePodsFromRunning                     = "EnsureStagePodsFromRunning"
+	EnsureStagePodsFromTemplates                   = "EnsureStagePodsFromTemplates"
+	EnsureStagePodsFromOrphanedPVCs                = "EnsureStagePodsFromOrphanedPVCs"
+	StagePodsCreated                               = "StagePodsCreated"
+	StagePodsFailed                                = "StagePodsFailed"
+	SourceStagePodsFailed                          = "SourceStagePodsFailed"
+	RestartVelero                                  = "RestartVelero"
+	WaitForVeleroReady                             = "WaitForVeleroReady"
+	RestartRestic                                  = "RestartRestic"
+	WaitForResticReady                             = "WaitForResticReady"
+	QuiesceSourceApplications                      = "QuiesceSourceApplications"
+	QuiesceDestinationApplications                 = "QuiesceDestinationApplications"
+	EnsureSrcQuiesced                              = "EnsureSrcQuiesced"
+	EnsureDestQuiesced                             = "EnsureDestQuiesced"
+	UnQuiesceSrcApplications                       = "UnQuiesceSrcApplications"
+	UnQuiesceDestApplications                      = "UnQuiesceDestApplications"
+	SwapPVCReferences                              = "SwapPVCReferences"
+	WaitForRegistriesReady                         = "WaitForRegistriesReady"
+	EnsureStageBackup                              = "EnsureStageBackup"
+	StageBackupCreated                             = "StageBackupCreated"
+	StageBackupFailed                              = "StageBackupFailed"
+	EnsureInitialBackupReplicated                  = "EnsureInitialBackupReplicated"
+	EnsureStageBackupReplicated                    = "EnsureStageBackupReplicated"
+	EnsureStageRestore                             = "EnsureStageRestore"
+	StageRestoreCreated                            = "StageRestoreCreated"
+	StageRestoreFailed                             = "StageRestoreFailed"
+	CreateDirectVolumeMigrationStage               = "CreateDirectVolumeMigrationStage"
+	CreateDirectVolumeMigrationFinal               = "CreateDirectVolumeMigrationFinal"
+	CreateDirectVolumeMigrationRollback            = "CreateDirectVolumeMigrationRollback"
+	WaitForDirectVolumeMigrationToComplete         = "WaitForDirectVolumeMigrationToComplete"
+	WaitForDirectVolumeMigrationRollbackToComplete = "WaitForDirectVolumeMigrationToRollbackComplete"
+	DirectVolumeMigrationFailed                    = "DirectVolumeMigrationFailed"
+	EnsureFinalRestore                             = "EnsureFinalRestore"
+	FinalRestoreCreated                            = "FinalRestoreCreated"
+	FinalRestoreFailed                             = "FinalRestoreFailed"
+	Verification                                   = "Verification"
+	EnsureStagePodsDeleted                         = "EnsureStagePodsDeleted"
+	EnsureStagePodsTerminated                      = "EnsureStagePodsTerminated"
+	EnsureAnnotationsDeleted                       = "EnsureAnnotationsDeleted"
+	EnsureMigratedDeleted                          = "EnsureMigratedDeleted"
+	DeleteRegistries                               = "DeleteRegistries"
+	DeleteMigrated                                 = "DeleteMigrated"
+	DeleteBackups                                  = "DeleteBackups"
+	DeleteRestores                                 = "DeleteRestores"
+	DeleteHookJobs                                 = "DeleteHookJobs"
+	DeleteDirectVolumeMigrationResources           = "DeleteDirectVolumeMigrationResources"
+	DeleteDirectImageMigrationResources            = "DeleteDirectImageMigrationResources"
+	MigrationFailed                                = "MigrationFailed"
+	Canceling                                      = "Canceling"
+	Canceled                                       = "Canceled"
+	Rollback                                       = "Rollback"
+	Completed                                      = "Completed"
+)
+
+// Migration steps
+const (
+	StepPrepare               = "Prepare"
+	StepDirectImage           = "DirectImage"
+	StepDirectVolume          = "DirectVolume"
+	StepBackup                = "Backup"
+	StepStageBackup           = "StageBackup"
+	StepStageRestore          = "StageRestore"
+	StepRestore               = "Restore"
+	StepCleanup               = "Cleanup"
+	StepCleanupVelero         = "CleanupVelero"
+	StepCleanupHelpers        = "CleanupHelpers"
+	StepCleanupMigrated       = "CleanupMigrated"
+	StepCleanupUnquiesce      = "CleanupUnquiesce"
+	StepRollbackLiveMigration = "RollbackLiveMigration"
+)
+
+// Phase defines phase in the migration
+type Phase struct {
+	// A phase name.
+	Name string
+	// High level Step this phase belongs to
+	Step string
+	// Step included when ALL flags evaluate true.
+	all uint32
+	// Step included when ANY flag evaluates true.
+	anyf uint32
+}

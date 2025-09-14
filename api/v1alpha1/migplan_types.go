@@ -43,9 +43,6 @@ type MigPlanSpec struct {
 
 	MigStorageRef *corev1.ObjectReference `json:"migStorageRef,omitempty"`
 
-	// If set True, disables direct volume migrations.
-	IndirectVolumeMigration bool `json:"indirectVolumeMigration,omitempty"`
-
 	// LabelSelector optional label selector on the included resources in Velero Backup
 	// +kubebuilder:validation:Optional
 	LabelSelector *metav1.LabelSelector `json:"labelSelector,omitempty"`
@@ -103,6 +100,36 @@ func (r *MigPlan) GetSourceNamespaces() []string {
 	}
 
 	return includedNamespaces
+}
+
+// GetDestinationNamespaces get destination namespaces without mapping
+func (r *MigPlan) GetDestinationNamespaces() []string {
+	includedNamespaces := []string{}
+	for _, namespace := range r.Spec.Namespaces {
+		namespaces := strings.Split(namespace, ":")
+		if len(namespaces) > 1 {
+			includedNamespaces = append(includedNamespaces, namespaces[1])
+		} else {
+			includedNamespaces = append(includedNamespaces, namespaces[0])
+		}
+	}
+
+	return includedNamespaces
+}
+
+// GetNamespaceMapping gets a map of src to dest namespaces
+func (r *MigPlan) GetNamespaceMapping() map[string]string {
+	nsMapping := make(map[string]string)
+	for _, namespace := range r.Spec.Namespaces {
+		namespaces := strings.Split(namespace, ":")
+		if len(namespaces) > 1 {
+			nsMapping[namespaces[0]] = namespaces[1]
+		} else {
+			nsMapping[namespaces[0]] = namespaces[0]
+		}
+	}
+
+	return nsMapping
 }
 
 func (r *MigPlan) GetSuffix() string {
@@ -352,12 +379,10 @@ type Supported struct {
 // Action - The PV migration action (move|copy|skip)
 // StorageClass - The PV storage class name to use in the destination cluster.
 // AccessMode   - The PV access mode to use in the destination cluster, if different from src PVC AccessMode
-// Verify       - Whether or not to verify copied volume data if CopyMethod is 'filesystem'
 type Selection struct {
 	Action       string                            `json:"action,omitempty"`
 	StorageClass string                            `json:"storageClass,omitempty"`
 	AccessMode   corev1.PersistentVolumeAccessMode `json:"accessMode,omitempty" protobuf:"bytes,1,rep,name=accessMode,casttype=PersistentVolumeAccessMode"`
-	Verify       bool                              `json:"verify,omitempty"`
 }
 
 // Update the PV with another.

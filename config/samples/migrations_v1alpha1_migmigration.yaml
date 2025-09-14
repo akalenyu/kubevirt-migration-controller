@@ -6,4 +6,9 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: migmigration-sample
 spec:
-  # TODO(user): Add fields here
+  migPlanRef:
+    name: migplan-sample
+    namespace: default
+  migrateState: true
+  quiescePods: true 
+  stage: false

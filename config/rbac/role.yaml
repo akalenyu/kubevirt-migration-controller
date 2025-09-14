@@ -15,7 +15,15 @@ rules:
   - ""
   resources:
   - persistentvolumeclaims
+  verbs:
+  - list
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - persistentvolumes
+  - pods
   verbs:
   - list
   - watch
@@ -24,6 +32,14 @@ rules:
   resources:
   - kubevirts
   verbs:
+  - list
+  - watch
+- apiGroups:
+  - kubevirt.io
+  resources:
+  - virtualmachines
+  verbs:
+  - get
   - list
   - watch
 - apiGroups:

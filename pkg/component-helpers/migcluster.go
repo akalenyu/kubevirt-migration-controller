@@ -11,19 +11,13 @@ import (
 	migrationsv1alpha1 "kubevirt.io/kubevirt-migration-controller/api/v1alpha1"
 )
 
-// GetSourceCluster - Get the referenced source cluster.
+// Get a referenced MigCluster.
 // Returns `nil` when the reference cannot be resolved.
-func GetSourceCluster(client k8sclient.Client, plan *migrationsv1alpha1.MigPlan) (*migrationsv1alpha1.MigCluster, error) {
-	return GetCluster(client, plan.Spec.SrcMigClusterRef)
-}
-
-// Get a referenced MigPlan.
-// Returns `nil` when the reference cannot be resolved.
-func GetPlan(client k8sclient.Client, ref *corev1.ObjectReference) (*migrationsv1alpha1.MigPlan, error) {
+func GetCluster(client k8sclient.Client, ref *corev1.ObjectReference) (*migrationsv1alpha1.MigCluster, error) {
 	if ref == nil {
 		return nil, nil
 	}
-	object := migrationsv1alpha1.MigPlan{}
+	object := migrationsv1alpha1.MigCluster{}
 	err := client.Get(
 		context.TODO(),
 		types.NamespacedName{

@@ -41,6 +41,7 @@ import (
 
 	migrationsv1alpha1 "kubevirt.io/kubevirt-migration-controller/api/v1alpha1"
 	"kubevirt.io/kubevirt-migration-controller/internal/controller"
+	"kubevirt.io/kubevirt-migration-controller/internal/controller/migmigration"
 	"kubevirt.io/kubevirt-migration-controller/internal/controller/migplan"
 	// +kubebuilder:scaffold:imports
 )
@@ -221,9 +222,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "MigPlan")
 		os.Exit(1)
 	}
-	if err = (&controller.MigMigrationReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+	if err = (&migmigration.MigMigrationReconciler{
+		Client:        mgr.GetClient(),
+		Scheme:        mgr.GetScheme(),
+		EventRecorder: mgr.GetEventRecorderFor("migmigration-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "MigMigration")
 		os.Exit(1)

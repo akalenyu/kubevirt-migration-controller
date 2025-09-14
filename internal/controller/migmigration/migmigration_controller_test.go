@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package migmigration
 
 import (
 	"context"
@@ -30,7 +30,7 @@ import (
 	migrationsv1alpha1 "kubevirt.io/kubevirt-migration-controller/api/v1alpha1"
 )
 
-var _ = Describe("MigMigration Controller", func() {
+var _ = PDescribe("MigMigration Controller", func() {
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 

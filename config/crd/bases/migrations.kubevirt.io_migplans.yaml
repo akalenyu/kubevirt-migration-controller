@@ -99,9 +99,6 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
-              indirectVolumeMigration:
-                description: If set True, disables direct volume migrations.
-                type: boolean
               labelSelector:
                 description: LabelSelector optional label selector on the included
                   resources in Velero Backup
@@ -252,7 +249,6 @@ spec:
                         Action - The PV migration action (move|copy|skip)
                         StorageClass - The PV storage class name to use in the destination cluster.
                         AccessMode   - The PV access mode to use in the destination cluster, if different from src PVC AccessMode
-                        Verify       - Whether or not to verify copied volume data if CopyMethod is 'filesystem'
                       properties:
                         accessMode:
                           type: string
@@ -260,8 +256,6 @@ spec:
                           type: string
                         storageClass:
                           type: string
-                        verify:
-                          type: boolean
                       type: object
                     storageClass:
                       type: string

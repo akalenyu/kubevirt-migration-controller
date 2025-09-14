@@ -120,3 +120,80 @@ type MigMigrationList struct {
 func init() {
 	SchemeBuilder.Register(&MigMigration{}, &MigMigrationList{})
 }
+
+// FindStep find step by name
+func (s *MigMigrationStatus) FindStep(stepName string) *Step {
+	for _, step := range s.Pipeline {
+		if step.Name == stepName {
+			return step
+		}
+	}
+	return nil
+}
+
+// AddStep adds a new step to the pipeline
+func (s *MigMigrationStatus) AddStep(step *Step) {
+	found := s.FindStep(step.Name)
+	if found == nil {
+		s.Pipeline = append(
+			s.Pipeline,
+			step,
+		)
+	}
+}
+
+// ReflectPipeline reflects pipeline
+func (s *MigMigrationStatus) ReflectPipeline() {
+	for _, step := range s.Pipeline {
+		if step.MarkedCompleted() {
+			step.Phase = ""
+			step.Message = "Completed"
+		}
+		if step.Failed {
+			step.Message = "Failed"
+		}
+		if step.Skipped {
+			step.Message = "Skipped"
+		}
+	}
+}
+
+// Add (de-duplicated) errors.
+func (r *MigMigration) AddErrors(errors []string) {
+	m := map[string]bool{}
+	for _, e := range r.Status.Errors {
+		m[e] = true
+	}
+	for _, error := range errors {
+		_, found := m[error]
+		if !found {
+			r.Status.Errors = append(r.Status.Errors, error)
+		}
+	}
+}
+
+// HasErrors will notify about error presence on the MigMigration resource
+func (r *MigMigration) HasErrors() bool {
+	return len(r.Status.Errors) > 0
+}
+
+// TODO: remove when real dvm introduced
+type DirectVolumeMigration struct{}
+type DirectVolumeMigrationType string
+
+type PVCToMigrate struct {
+	*corev1.ObjectReference `json:",inline"`
+	// TargetStorageClass storage class of the migrated PVC in the target cluster
+	TargetStorageClass string `json:"targetStorageClass"`
+	// TargetAccessModes access modes of the migrated PVC in the target cluster
+	TargetAccessModes []corev1.PersistentVolumeAccessMode `json:"targetAccessModes"`
+	// TargetVolumeMode volume mode of the migrated PVC in the target cluster
+	TargetVolumeMode *corev1.PersistentVolumeMode `json:"targetVolumeMode,omitempty"`
+	// TargetNamespace namespace of the migrated PVC in the target cluster
+	TargetNamespace string `json:"targetNamespace,omitempty"`
+	// TargetName name of the migrated PVC in the target cluster
+	// +kubebuilder:validation:Optional
+	TargetName string `json:"targetName,omitempty"`
+	// Verify set true to verify integrity of the data post migration
+	Verify bool `json:"verify,omitempty"`
+}
